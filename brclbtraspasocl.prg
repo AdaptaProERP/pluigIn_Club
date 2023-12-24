@@ -1201,6 +1201,9 @@ FUNCTION TRASPASO()
   oData:SAVE()
   oData:End()
 
+  oDp:lVerFac:=oCLBTRASPASOCL:lVerFav // Ver factura CBLTRATOFAV
+
+
   oCLBTRASPASOCL:oCodCli:VarPut(SPACE(10),.T.)
   oCLBTRASPASOCL:oCodDes:VarPut(SPACE(10),.T.)
   oCLBTRASPASOCL:oFchIni:VarPut(CTOD("") ,.T.)

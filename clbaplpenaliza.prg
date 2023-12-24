@@ -42,8 +42,8 @@ PROCE MAIN(dDesde,dHasta,dFecha,cCodCli)
          [ MOV_PRECIO=MOV_PRECIO*]+cPor+[,]+CRLF+;
          [ MOV_TOTAL =MOV_TOTAL *]+cPor+[,]+CRLF+;
          [ MOV_MTODIV=MOV_MTODIV*]+cPor+[,]+CRLF+;
-         [ MOV_X     =1          ]+;
-         [ WHERE (MOV_X=0  OR MOV_X IS NULL) ]
+         [ MOV_X     =1 ]+;
+         [ WHERE (MOV_X=0  OR MOV_X IS NULL) AND MOV_USUARI]+GetWhere("<>","MIX")
 
    lResp:=oDb:EXECUTE(cSql)
 
@@ -53,7 +53,7 @@ PROCE MAIN(dDesde,dHasta,dFecha,cCodCli)
          [ DOC_BASNET=DOC_BASNET*]+cPor+[,]+CRLF+;
          [ DOC_MTOIVA=DOC_MTOIVA*]+cPor+[,]+CRLF+;
          [ DOC_VTAANT=1 ]+CRLF+;
-         [ WHERE ]+cWhere
+         [ WHERE ]+cWhere+[ AND DOC_USUARI]+GetWhere("<>","MIX")
     
    lResp:=oDb:EXECUTE(cSql)
     
