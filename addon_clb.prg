@@ -53,7 +53,7 @@ PROCE MAIN(cCodAdd)
 
    AADD(aBtn,{"Socios"                     ,"CLIENTE.BMP"       ,"CLIENTES"  }) 
    AADD(aBtn,{"Familiares"                 ,"FAMILIA.BMP"       ,"FAMILIARES"})
-   AADD(aBtn,{"Inquilinos"                 ,"FACTURAPER.BMP"    ,"INQUILINOS"})
+   AADD(aBtn,{"Concesionarios"             ,"FACTURAPER.BMP"    ,"INQUILINOS"})
    AADD(aBtn,{"Tarifas"                    ,"PRECIOS.BMP"       ,"TARIFAS"   })
    AADD(aBtn,{"Generar Cuotas Socios"      ,"RUN.BMP"           ,"GENCUOTAS" })
    AADD(aBtn,{"Generar Cuotas Alquileres"  ,"RUNPROCESO.BMP"    ,"GENCUOTASAQL" })
@@ -64,12 +64,7 @@ PROCE MAIN(cCodAdd)
    AADD(aBtn,{"Tarifas x Afiliados"        ,"XBROWSE.BMP"       ,"AFILIADOS" })
    AADD(aBtn,{"Cuadro de Mando"            ,"PLANTILLAS.BMP"    ,"CMICUOTAS" })
    AADD(aBtn,{"Registro de Visitantes"     ,"XPERSONAL.BMP"     ,"VISITAS"   })
-
-
    AADD(aBtn,{"Iniciación de Cuotas para Socios"       ,"semaf01.BMP"         ,"INICUOTAS" })
-   AADD(aBtn,{"Impotar cuotas pendientes desde MIX-NET","import.BMP"          ,"IMPMIXNET" })
-   AADD(aBtn,{"Visualizar Cuotas desde MIXNET"         ,"xbrowse.BMP"         ,"VIEWCUO" })
-   AADD(aBtn,{"Visualizar Anticipos desde MIXNET"      ,"xbrowseamarillo.BMP" ,"VIEWANT" })
 
 
 /*
@@ -82,8 +77,8 @@ PROCE MAIN(cCodAdd)
  
    oClub:Windows(0,0,oDp:aCoors[3]-160,415)  
 
-  @ 48, -1 OUTLOOK oClub:oOut ;
-     SIZE 150+250, oClub:oWnd:nHeight()-90;
+  @ 48+20+20, -1 OUTLOOK oClub:oOut ;
+     SIZE 150+250, oClub:oWnd:nHeight()-(110+20);
      PIXEL ;
      FONT oFont ;
      OF oClub:oWnd;
@@ -110,6 +105,39 @@ PROCE MAIN(cCodAdd)
 
    NEXT I
 
+   aBtn:={}
+
+   AADD(aBtn,{"Impotar cuotas pendientes desde MIX-NET","import.BMP"          ,"IMPMIXNET" })
+   AADD(aBtn,{"Impotar Anticipos desde  MIX-NET"       ,"ANTICIPO.BMP"        ,"IMPMIXANT" })
+
+   AADD(aBtn,{"Visualizar Cuotas desde MIXNET"         ,"xbrowse.BMP"         ,"VIEWCUO" })
+   AADD(aBtn,{"Visualizar Anticipos desde MIXNET"      ,"xbrowseamarillo.BMP" ,"VIEWANT" })
+   AADD(aBtn,{"Visualizar Cuerpo de las Cuotas"        ,"xbrowse2.BMP"        ,"VIEWALBC" })
+
+
+   DEFINE GROUP OF OUTLOOK oClub:oOut PROMPT "&Importación desde MIXNET "
+
+   FOR I=1 TO LEN(aBtn)
+
+      DEFINE BITMAP OF OUTLOOK oClub:oOut ;
+             BITMAP "BITMAPS\"+aBtn[I,2];
+             PROMPT aBtn[I,1];
+             ACTION 1=1
+
+      nGroup:=LEN(oClub:oOut:aGroup)
+      oBtn:=ATAIL(oClub:oOut:aGroup[ nGroup, 2 ])
+
+      bAction:=BloqueCod("oClub:INVACTION(["+aBtn[I,3]+"])")
+
+      oBtn:bAction:=bAction
+
+      oBtn:=ATAIL(oClub:oOut:aGroup[ nGroup, 3 ])
+      oBtn:bLButtonUp:=bAction
+
+   NEXT I
+
+
+
    oClub:Activate("oClub:FRMINIT()",,"oClub:oSpl:AdjRight()")
  
 RETURN
@@ -117,9 +145,46 @@ RETURN
 FUNCTION FRMINIT()
    LOCAL oCursor,oBar,oBtn,oFont,nCol:=12
 
-   DEFINE BUTTONBAR oBar SIZE 44,44 OF oClub:oWnd 3D CURSOR oCursor
+   DEFINE BUTTONBAR oBar SIZE 44+15,44+20 OF oClub:oWnd 3D CURSOR oCursor
 
    DEFINE FONT oFont  NAME "Tahoma"   SIZE 0, -11 BOLD
+
+   DEFINE BUTTON oBtn;
+          OF oBar;
+          NOBORDER;
+          FONT oFont;
+          FILENAME "BITMAPS\CXC.BMP";
+          TOP PROMPT "CxC"; 
+          ACTION EJECUTAR("BRCXC")
+
+   DEFINE BUTTON oBtn;
+          OF oBar;
+          NOBORDER;
+          FONT oFont;
+          FILENAME "BITMAPS\GUARDERIACUOTAS.BMP";
+          TOP PROMPT "Cuotas"; 
+          ACTION EJECUTAR("DPFACTURAV","CUO")
+
+   DEFINE BUTTON oBtn;
+          OF oBar;
+          NOBORDER;
+          FONT oFont;
+          FILENAME "BITMAPS\XBROWSE.BMP";
+          MENU oClub:MENU_POS("MENU_POSRUN","UNO");
+          TOP PROMPT "Detalles"; 
+          ACTION EJECUTAR("BRTICKETPOS")
+
+   oBtn:cToolTip:="Ventas resumidas por Fecha"
+
+
+
+   DEFINE BUTTON oBtn;
+          OF oBar;
+          NOBORDER;
+          FONT oFont;
+          FILENAME "BITMAPS\CONFIGURA.BMP";
+          TOP PROMPT "Configura"; 
+          ACTION EJECUTAR("CLBCONFIG")
 
 /*
    DEFINE BUTTON oBtn;
@@ -136,15 +201,16 @@ FUNCTION FRMINIT()
           NOBORDER;
           FONT oFont;
           FILENAME "BITMAPS\XSALIR.BMP";
+          TOP PROMPT "Cerrar"; 
           ACTION oClub:End()
 
   oBar:SetColor(CLR_BLACK,oDp:nGris)
 
- @ 1,40 CHECKBOX oClub:oADD_AUTEJE VAR oClub:ADD_AUTEJE  PROMPT "Auto-Ejecución";
+ @ 65,15 CHECKBOX oClub:oADD_AUTEJE VAR oClub:ADD_AUTEJE  PROMPT "Auto-Ejecución";
                  WHEN  (AccessField("DPADDON","ADD_AUTEJE",1));
                  FONT oFont;
                  SIZE 180,20 OF oBar;
-                 ON CHANGE EJECUTAR("ADDONUPDATE","ADD_AUTEJE",oClub:ADD_AUTEJE,"CLB")
+                 ON CHANGE EJECUTAR("ADDONUPDATE","ADD_AUTEJE",oClub:ADD_AUTEJE,"CLB") PIXEL
 
   oClub:oADD_AUTEJE:cMsg    :="Auto-Ejecución cuando se Inicia el Sistema"
   oClub:oADD_AUTEJE:cToolTip:="Auto-Ejecución cuando se Inicia el Sistema"
@@ -157,6 +223,7 @@ FUNCTION FRMINIT()
 //  @ 00.0,20 SAY " "+DTOC(oClub:dFchIniCol)+" " OF oBar BORDER SIZE 76,20 COLOR oDp:nClrYellowText,oDp:nClrYellow FONT oFont SIZE 80,20 
 //  @ 01.4,20 SAY " "+DTOC(oClub:dFchFinCol)+" " OF oBar BORDER SIZE 76,20 COLOR oDp:nClrYellowText,oDp:nClrYellow FONT oFont SIZE 80,20 
 
+  oBar:SetSize(NIL,90,.T.)
   oBar:Refresh(.T.)
 
   oClub:oWnd:bResized:={||oClub:oWnd:oClient := oClub:oOut,;
@@ -242,7 +309,11 @@ FUNCTION INVACTION(cAction)
   ENDIF
 
   IF cAction="VIEWANT"
-     EJECUTAR("VIEWMIXENCALB")
+     EJECUTAR("VIEWMIXANTICIPOS")
+  ENDIF
+
+  IF cAction="VIEWALBC"
+     EJECUTAR("VIEWMIXRENALB")
   ENDIF
 
   IF cAction="INQUILINOS"
@@ -253,5 +324,101 @@ FUNCTION INVACTION(cAction)
      EJECUTAR("BRCLBTRASPASO")     
   ENDIF
 
+  IF cAction="IMPMIXANT" .AND. MsgNoYes("Desea Importar Anticipos desde MIXNET")
+     EJECUTAR("importantmix")  
+     EJECUTAR("BRDPDOCCLICXC",NIL,oDp:cSucursal,NIL,NIL,NIL,NIL,"ANT")
+  ENDIF
+
 RETURN .T.
+
+PROCE MENU_POS(cFunction,cQuien)
+   LOCAL oPopFind,I,cBuscar,bAction,cFrm
+   LOCAL aOption:={}
+
+   cFrm:=oClub:cVarName
+
+   AADD(aOption,"Reporte X")
+   AADD(aOption,"Reporte Z")
+   AADD(aOption,"Resetear Impresión")
+   AADD(aOption,"Resumen Diario de Transacciones")
+   AADD(aOption,"Detalle Facturas y Devoluciones Impresos para el Comparativo con Reporte X o Z")
+   AADD(aOption,"Ingreso de Divisas en Columnas")
+   AADD(aOption,"Anticipos")
+   AADD(aOption,"Cuotas")
+
+
+   C5MENU oPopFind POPUP;
+          COLOR    oDp:nMenuItemClrText,oDp:nMenuItemClrPane;
+          COLORSEL oDp:nMenuItemSelText,oDp:nMenuItemSelPane;
+          COLORBOX oDp:nMenuBoxClrText;
+          HEIGHT   oDp:nMenuHeight;
+          FONT     oDp:oFontMenu;
+          LOGOCOLOR oDp:nMenuMainClrText
+
+          FOR I=1 TO LEN(aOption)
+
+           
+            bAction:=cFrm+":lTodos:=.F.,oClub:"+cFunction+"("+LSTR(I)+",["+cQuien+"]"+",["+aOption[I]+"]"+")"
+            bAction:=BloqueCod(bAction)
+       
+            C5MenuAddItem(aOption[I],,.F.,,bAction,,,,,,,.F.,,,.F.,,,,,,,,.F.,)
+
+          NEXT I
+
+   C5ENDMENU
+
+RETURN oPopFind
+
+FUNCTION MENU_POSRUN(nOption,cPar2)
+   LOCAL cWhere:=NIL
+   LOCAL nPeriodo:=NIL,dDesde:=NIL,dHasta:=NIL,cTitle:=NILL,cCodMot:=NIL
+
+   CursorWait()
+
+   IF nOption=1
+      EJECUTAR("DLL_IMPFISCAL_CMD","","REPORTE X")
+   ENDIF
+
+   IF nOption=2
+      EJECUTAR("DLL_IMPFISCAL_CMD","","REPORTE Z")
+      // Mientras Imprime Guarda los tickets
+      EJECUTAR("TIKTORVT",oDp:cSucursal,oDp:dFecha,oDp:dFecha)
+   ENDIF
+
+   IF nOption=3
+      EJECUTAR("DLL_IMPFISCAL_CMD","","RESETEAR")
+   ENDIF
+
+   IF nOption=4
+      EJECUTAR("BRDIARIOTRANS",NIL,oDp:cSucursal,1,oDp:dFecha,oDp:dFecha,NIL)
+   ENDIF
+ 
+   IF nOption=5
+      EJECUTAR("BRTICKETPOS","TDC_LIBVTA=1 AND DOC_IMPRES=1 AND DOC_ACT=1",oDp:cSucursal,1,oDp:dFecha,oDp:dFecha," Comparativo con Reporte Z",.T.)
+   ENDIF
+
+   IF nOption=6
+      EJECUTAR("BRCAJINGDIVXCOL")
+   ENDIF
+
+   IF nOption=7
+      EJECUTAR("BRDPDOCCLICXC",cWhere,oDp:cSucursal,nPeriodo,dDesde,dHasta,cTitle,"ANT",cCodMot)
+   ENDIF
+
+   IF nOption=8
+      EJECUTAR("BRDPDOCCLICXC",cWhere,oDp:cSucursal,nPeriodo,dDesde,dHasta,cTitle,"CUO",cCodMot)
+   ENDIF
+
+
+RETURN .T.
+
+FUNCTION VERRESUMEN()
+  LOCAL cWhere:=NIL,cCodSuc:=oDp:cSucursal,nPeriodo:=NIL,dDesde:=NIL,dHasta:=NIL,cTitle:=NIL
+  // Calcula la de hoy
+  EJECUTAR("TIKTORVT",oDp:cSucursal,oDp:dFecha,oDp:dFecha)
+
+  EJECUTAR("BRPOSRESRVT",cWhere,cCodSuc,nPeriodo,dDesde,dHasta,cTitle)
+
+RETURN .T.
+
 // EOF
